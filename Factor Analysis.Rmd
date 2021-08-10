@@ -1,0 +1,152 @@
+---
+title: "Factor Analysis Project"
+author: "S16844"
+date: "8/4/2021"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Import Packages
+```{r}
+library(data.table)
+library(factoextra)
+library(psych)
+library(corrplot)
+library(ggplot2)
+
+```
+
+Import data as "df" . I dropped two categorical variables for my analysis
+```{r}
+df <- fread("bodyfat.csv",header = TRUE)
+head(df)
+```
+
+Set NA values to zero
+```{r}
+df[is.na(df)] <- 0
+```
+
+Describe the dataset
+```{r}
+describe(df)
+```
+Standardized data
+```{r}
+df_st <- apply(df,2,scale)
+df_st
+```
+
+KMO Test
+```{r}
+KMO(df_st)
+```
+Dimensions of the dataset
+```{r}
+dim(df_st)
+```
+
+Get the covariance matrix of standardized data
+```{r}
+df_st_cov <- cov(df_st)
+df_st_cov
+```
+
+Get eigen values and eigen vectors of covariance matrix
+```{r}
+df_st_cov_eigen <- eigen(df_st_cov)
+
+#eigen values
+df_st_cov_eigen$values
+
+#eigen vectors
+df_st_cov_eigen$vectors
+```
+Proportion of variance explained
+```{r}
+PVE <- df_st_cov_eigen$values / sum(df_st_cov_eigen$values)
+PVE
+```
+Scree Plot
+```{r}
+scree(df_st)
+```
+
+Parallel analysis Scree Plots
+```{r}
+fa.parallel(df_st,fm="pa",fa="fa")
+```
+Factor Analysis from 'Principal Component Method'
+```{r}
+df_st_fa_pc <- fa(df_st_cov ,nfactors = 3,rotate = "none",n.obs = 252 ,covar = TRUE,fm = "pa")
+df_st_fa_pc
+```
+Get unrotated loadings from PC method
+```{r}
+df_st_fa_pc$loadings
+```
+Get unrotated PC loadings as dataframe
+```{r}
+unrotated_pc_loadings <- as.data.frame(unclass(df_st_fa_pc$loadings))
+unrotated_pc_loadings
+```
+
+Get unrotated PC method communalities as dataframe
+```{r}
+unrotated_pc_com <- as.data.frame(unclass(df_st_fa_pc$communality))
+unrotated_pc_com
+```
+Factor Analysis from 'Maximum Likelihood Method'
+```{r}
+df_st_fa_ml <- fa(df_st_cov,nfactors = 3,rotate = "none",n.obs = 252 , covar = TRUE, fm = 'ml')
+df_st_fa_ml
+```
+Get unrotated ML loadings 
+```{r}
+df_st_fa_ml$loadings
+```
+Get unrotated ML loadings as dataframe
+```{r}
+unrotated_ml_loadings <- as.data.frame(unclass(df_st_fa_ml$loadings))
+unrotated_ml_loadings
+```
+Get unrotated Communalities in ML method
+```{r}
+unrotated_ml_com <- as.data.frame(unclass(df_st_fa_ml$communality))
+unrotated_ml_com
+```
+Rotate the PC method factor loadings using 'Varimax' method
+```{r}
+library(GPArotation)
+df_st_fa_pc_rotate <- fa(df_st_cov ,nfactors = 3,rotate = "varimax",n.obs = 252 ,covar = TRUE,fm = 'pa')
+df_st_fa_pc_rotate
+```
+```{r}
+df_st_fa_pc_rotate$loadings
+```
+
+Roatate factor loadings as a dataframe from PC method
+```{r}
+rotated_pc_loadings <- as.data.frame(unclass(df_st_fa_pc_rotate$loadings))
+rotated_pc_loadings
+```
+Get rotated communalities in PC method
+```{r}
+rotated_pc_com <- as.data.frame(unclass(df_st_fa_pc_rotate$communality))
+rotated_pc_com
+```
+
+
+
+
+
+
+
+
+
+
+
+
